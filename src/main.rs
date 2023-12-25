@@ -10,15 +10,7 @@ struct cpu {
 }
 
 impl cpu {
-    fn new() -> cpu {
-        cpu {
-            pc: 0,
-            sp: 0,
-            a: 0,
-            x: 0,
-            y: 0,
-        }
-    }
+
 }
 
 fn main() {
