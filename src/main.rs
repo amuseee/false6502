@@ -12,10 +12,17 @@ struct cpu {
     y: u8,
 
     // processor status flags - bitfields
-   bitfield!{
-        pub struct Statusflags(u8);
-
-   } 
+    bitfield!{
+        struct Statusflags(u8);
+        impl Debug;
+        c: 1, // carry
+        z: 1, // zero
+        i: 1, // interrupt? interrupt disable?
+        d: 1, // decimal/base10 mode
+        b: 1, // break command
+        v: 1, // overflow
+        n: 1, // negative flag
+    }
     /*
         c++ implen of bitfield status flags
         unsigned char C : 1;
@@ -29,7 +36,6 @@ struct cpu {
 }
 
 impl cpu {
-
 }
 
 fn main() {
