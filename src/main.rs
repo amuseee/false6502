@@ -1,44 +1,56 @@
 // simple 6502 emulator written in rust
 // https://web.archive.org/web/20210429110213/http://www.obelisk.me.uk/6502/
 
+use std::arch::x86_64::_CMP_FALSE_OQ;
+
 struct cpu {
-    pc: u16, // program counter
-    sp: u16, // stack pointer
-    a: u8, // registers
-    x: u8,
-    y: u8,
-    /*
-        TODO: implement processor status flags - bitfields
-        c++ implen of bitfield status flags
-        unsigned char C : 1;
-        unsigned char Z : 1;
-        unsigned char I : 1;
-        unsigned char D : 1;
-        unsigned char B : 1;
-        unsighed char V : 1;
-        unsigned char N : 1;
-    */
+    PC: u16, // program counter
+    SP: u16, // stack pointer
+    A: u8, // registers
+    X: u8,
+    Y: u8,
+    C: bool, // 1 bit processor flags, can use bool
+    Z: bool,
+    I: bool,
+    D: bool,
+    B: bool,
+    V: bool,
+    N: bool,
 }
 
 impl cpu {
     fn new() -> Self {
         cpu {
-            pc: 0,
-            sp: 0,
-            a: 0,
-            x: 0,
-            y: 0,
+            PC: 0,
+            SP: 0,
+            A: 0,
+            X: 0,
+            Y: 0,
+            C: false,
+            Z: false,
+            I: false,
+            D: false,
+            B: false,
+            V: false,
+            N: false,
         }
     }
 
     fn reset(&mut self)
     {
         // https://www.c64-wiki.com/wiki/Reset_(Process)
-        self.pc = 0xFFFC;
-        self.sp = 0x0100;
-        self.a = 0;
-        self.x = 0;
-        self.y = 0;
+        self.PC = 0xFFFC;
+        self.SP = 0x0100;
+        self.A = 0;
+        self.X = 0;
+        self.Y = 0;
+        self.C = false;
+        self.Z = false;
+        self.I = false;
+        self.D = false;
+        self.B = false;
+        self.V = false;
+        self.N = false;
     }
 }
 
