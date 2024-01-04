@@ -189,9 +189,9 @@ impl CPU {
                 0xA9 => self.lda(&AddressingMode::Immediate),
                 0xA5 => self.lda(&AddressingMode::ZeroPage),
                 0xB5 => self.lda(&AddressingMode::ZeroPage_X),
-                0xAD => self.lda(&AddressingMode::Absolute),
-                0xBD => self.lda(&AddressingMode::Absolute_X),
-                0xB9 => self.lda(&AddressingMode::Absolute_Y),
+                0xAD => {self.lda(&AddressingMode::Absolute); self.pc += 1;}
+                0xBD => {self.lda(&AddressingMode::Absolute_X); self.pc += 1;}
+                0xB9 => {self.lda(&AddressingMode::Absolute_Y); self.pc += 1;}
                 0xA1 => self.lda(&AddressingMode::Indirect_X),
                 0xB1 => self.lda(&AddressingMode::Indirect_Y), 
                 // unimplemented addressing
