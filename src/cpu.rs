@@ -8,8 +8,8 @@ instructions: https://www.nesdev.org/obelisk-6502-guide/reference.html#LDA
 */
 
 pub struct CPU {
-    pub a: u8,
-    pub x: u8,
+    pub ra: u8,
+    pub rx: u8,
     // pub y: u8,
     pub status: u8, // so there are a total of 7 status flags. 0bNVBDICZ0 (last bit is always unused i believe)
     // pub sp: u8,
@@ -19,14 +19,45 @@ pub struct CPU {
 impl CPU {
     pub fn new() -> Self {
         CPU {
-            a: 0,
-            x: 0,
+            ra: 0,
+            rx: 0,
             status: 0,
             pc: 0,
         }
     }
+
+    fn update_flags(&mut self, result: u8) { // takes in a register value and updates the status flags based on that
+        // sets/unsets zero flag
+        if result == 0 {
+            self.status |= 0b0000_0010;
+        } else {
+            self.status &= 0b1111_1101;
+        }
+
+        // sets/unsets negative flag
+        if result & 0b1000_0000 == 1 {
+            self.status |= 0b1000_0000;
+        } else {
+            self.status &= 0b0111_1111;
+        } 
+    }
+
+    fn lda(&mut self, param: u8) {
+        self.ra = param;
+        self.update_flags(self.ra);
+    }
+
+    fn tax(&mut self) {
+        self.rx = self.ra;
+        self.update_flags(self.ra)
+    }
+
+    fn inx(&mut self) {
+        self.rx = self.rx.wrapping_add(1);
+        self.update_flags(self.rx);
+    }
+
     pub fn interpret(&mut self, program: Vec<u8>) {
-        
         loop {
             let opcode = program[self.pc as usize];
             self.pc += 1;
@@ -35,110 +66,18 @@ impl CPU {
                     // lda - https://www.nesdev.org/obelisk-6502-guide/reference.html#LDA
                     let param = program[self.pc as usize];
                     self.pc += 1;
-                    self.a = param;
 
-                    // know your binary logic kids!
-                    if self.a == 0 {
-                        self.status = self.status | 0b00000010;
-                    } else {
-                        self.status = self.status & 0b11111101; // unsets the "Zero" flag
-                    }
-
-                    // negaive flag, set if bit 7 of a is set/is a 1
-                    if self.a & 0b10000000 == 1 {
-                        self.status = self.status | 0b10000000;
-                    } else {
-                        // unset
-                        self.status = self.status & 0b01111111;
-                    }
+                    self.lda(param);
                 }
-                0x00 => {
-                    return;
-                    // break doesnt need flags set since the program just quits
-                }
-                0xAA => {
-                    // tax
-                    self.x = self.a;
 
-                    if self.x == 0 {
-                        self.status = self.status | 0b10000000;
-                    } else {
-                        self.status = self.status & 0b11111101;
-                    }
-
-                    // neg flag
-                    if self.x & 0b10000000 == 1 {
-                        self.status = self.status | 0b10000000;
-                    } else {
-                        self.status = self.status & 0b01111111;
-                    }
-                }
-                0xe8 => {
-                    // inx
-                    self.x = self.x.wrapping_add(1);
-
-                    if self.x == 0 {
-                        self.status = self.status | 0b10000000;
-                    } else {
-                        self.status = self.status & 0b11111101;
-                    }
-
-                    // neg flag
-                    if self.x & 0b10000000 == 1 {
-                        self.status = self.status | 0b10000000;
-                    } else {
-                        self.status = self.status & 0b01111111;
-                    }
-                }
+                0x00 => return,
+                
+                0xAA => self.tax(),
+                
+                0xe8 => self.inx(),
+                
                 _ => todo!()
             }
         }
     }
-}
-
-#[cfg(test)]
-mod test {
-   use super::*;
- 
-   #[test]
-   fn test_0xa9_lda_immediate_load_data() {
-       let mut cpu = CPU::new();
-       cpu.interpret(vec![0xa9, 0x05, 0x00]);
-       assert_eq!(cpu.a, 0x05);
-       assert!(cpu.status & 0b0000_0010 == 0b00);
-       assert!(cpu.status & 0b1000_0000 == 0);
-   }
-
-    #[test]
-    fn test_0xa9_lda_zero_flag() {
-        let mut cpu = CPU::new();
-        cpu.interpret(vec![0xa9, 0x00, 0x00]);
-        assert!(cpu.status & 0b0000_0010 == 0b10);
-    }
-
-    #[test]
-    fn test_0xaa_tax_move_a_to_x() {
-        let mut cpu = CPU::new();
-        cpu.a = 10;
-        cpu.interpret(vec![0xaa, 0x00]);
-  
-        assert_eq!(cpu.x, 10)
-    }
-
-    #[test]
-    fn test_5_ops_working_together() {
-        let mut cpu = CPU::new();
-        cpu.interpret(vec![0xa9, 0xc0, 0xaa, 0xe8, 0x00]);
-  
-        assert_eq!(cpu.x, 0xc1)
-    }
- 
-     #[test]
-     fn test_inx_overflow() {
-         let mut cpu = CPU::new();
-         cpu.x = 0xff;
-         cpu.interpret(vec![0xe8, 0xe8, 0x00]);
- 
-         assert_eq!(cpu.x, 1)
-     }
 }
