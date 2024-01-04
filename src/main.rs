@@ -1,5 +1,5 @@
 pub mod cpu;
 
 fn main() {
-    println!("pikmin");
+    println!("da 6502");
 }

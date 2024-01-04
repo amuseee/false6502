@@ -1,5 +1,2 @@
-false6502 - a 6502 emulator written is rust
-**still a work in progress**
-trying to follow a bunch of tutorials to make it work:
-- https://www.youtube.com/watch?v=qJgsuQoy9bc
-- https://bugzmanov.github.io/nes_ebook/chapter_3.html
+6502 emulator written in rust
+progress: 3/??? opcodes valid

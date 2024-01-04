@@ -9,7 +9,7 @@ instructions: https://www.nesdev.org/obelisk-6502-guide/reference.html#LDA
 
 pub struct CPU {
     pub a: u8,
-    // pub x: u8,
+    pub x: u8,
     // pub y: u8,
     pub status: u8, // so there are a total of 7 status flags. 0bNVBDICZ0 (last bit is always unused i believe)
     // pub sp: u8,
@@ -20,6 +20,7 @@ impl CPU {
     pub fn new() -> Self {
         CPU {
             a: 0,
+            x: 0,
             status: 0,
             pc: 0,
         }
@@ -54,7 +55,23 @@ impl CPU {
                 }
                 0x00 => {
                     return;
-                    // quicc break impl
+                    // break doesnt need flags set since the program just quits
+                }
+                0xAA => {
+                    self.x = self.a;
+
+                    if self.x == 0 {
+                        self.status = self.status | 0b10000000;
+                    } else {
+                        self.status = self.status & 0b11111101;
+                    }
+
+                    // neg flag
+                    if self.x & 0b10000000 == 1 {
+                        self.status = self.status | 0b10000000;
+                    } else {
+                        self.status = self.status & 0b01111111;
+                    }
                 }
                 _ => todo!()
             }
@@ -80,5 +97,14 @@ mod test {
         let mut cpu = CPU::new();
         cpu.interpret(vec![0xa9, 0x00, 0x00]);
         assert!(cpu.status & 0b0000_0010 == 0b10);
+    }
+
+    #[test]
+    fn test_0xaa_tax_move_a_to_x() {
+        let mut cpu = CPU::new();
+        cpu.a = 10;
+        cpu.interpret(vec![0xaa, 0x00]);
+  
+        assert_eq!(cpu.x, 10)
     }
 }
