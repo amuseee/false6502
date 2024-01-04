@@ -9,10 +9,10 @@ instructions: https://www.nesdev.org/obelisk-6502-guide/reference.html#LDA
 
 pub struct CPU {
     pub a: u8,
-    pub x: u8,
-    pub y: u8,
+    // pub x: u8,
+    // pub y: u8,
     pub status: u8, // so there are a total of 7 status flags. 0bNVBDICZ0 (last bit is always unused i believe)
-    pub sp: u8,
+    // pub sp: u8,
     pub pc: u16,
 }
 
@@ -39,21 +39,46 @@ impl CPU {
 
                     // know your binary logic kids!
                     if self.a == 0 {
-                        self.status = self.status || 0b00000010;
+                        self.status = self.status | 0b00000010;
                     } else {
-                        self.status = self.statuf && 0b11111101; // unsets the "Zero" flag
+                        self.status = self.status & 0b11111101; // unsets the "Zero" flag
                     }
 
                     // negaive flag, set if bit 7 of a is set/is a 1
                     if self.a & 0b10000000 == 1 {
-                        self.status = self.status || 0b10000000;
+                        self.status = self.status | 0b10000000;
                     } else {
                         // unset
                         self.status = self.status & 0b01111111;
                     }
                 }
+                0x00 => {
+                    return;
+                    // quicc break impl
+                }
                 _ => todo!()
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+   use super::*;
+ 
+   #[test]
+   fn test_0xa9_lda_immediate_load_data() {
+       let mut cpu = CPU::new();
+       cpu.interpret(vec![0xa9, 0x05, 0x00]);
+       assert_eq!(cpu.a, 0x05);
+       assert!(cpu.status & 0b0000_0010 == 0b00);
+       assert!(cpu.status & 0b1000_0000 == 0);
+   }
+
+    #[test]
+    fn test_0xa9_lda_zero_flag() {
+        let mut cpu = CPU::new();
+        cpu.interpret(vec![0xa9, 0x00, 0x00]);
+        assert!(cpu.status & 0b0000_0010 == 0b10);
     }
 }
