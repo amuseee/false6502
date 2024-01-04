@@ -26,8 +26,7 @@ impl CPU {
         }
     }
     pub fn interpret(&mut self, program: Vec<u8>) {
-        self.pc = 0;
-
+        
         loop {
             let opcode = program[self.pc as usize];
             self.pc += 1;
@@ -58,7 +57,25 @@ impl CPU {
                     // break doesnt need flags set since the program just quits
                 }
                 0xAA => {
+                    // tax
                     self.x = self.a;
+
+                    if self.x == 0 {
+                        self.status = self.status | 0b10000000;
+                    } else {
+                        self.status = self.status & 0b11111101;
+                    }
+
+                    // neg flag
+                    if self.x & 0b10000000 == 1 {
+                        self.status = self.status | 0b10000000;
+                    } else {
+                        self.status = self.status & 0b01111111;
+                    }
+                }
+                0xe8 => {
+                    // inx
+                    self.x = self.x.wrapping_add(1);
 
                     if self.x == 0 {
                         self.status = self.status | 0b10000000;
@@ -107,4 +124,21 @@ mod test {
   
         assert_eq!(cpu.x, 10)
     }
+
+    #[test]
+    fn test_5_ops_working_together() {
+        let mut cpu = CPU::new();
+        cpu.interpret(vec![0xa9, 0xc0, 0xaa, 0xe8, 0x00]);
+  
+        assert_eq!(cpu.x, 0xc1)
+    }
+ 
+     #[test]
+     fn test_inx_overflow() {
+         let mut cpu = CPU::new();
+         cpu.x = 0xff;
+         cpu.interpret(vec![0xe8, 0xe8, 0x00]);
+ 
+         assert_eq!(cpu.x, 1)
+     }
 }
