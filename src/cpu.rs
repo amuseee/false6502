@@ -49,7 +49,7 @@ impl CPU {
     fn get_op_addr(&mut self, mode: &AddressingMode) -> u16 {
 
         match mode {
-            // taken from https://bugzmanov.github.io/nes_ebook/chapter_3_2.html - will re-implement when not feeling lazy
+            // taken from https://bugzmanov.github.io/nes_ebook/chapter_3_2.html - will re-implement
             AddressingMode::Immediate => self.pc,
  
             AddressingMode::ZeroPage  => self.read(self.pc) as u16,
@@ -111,7 +111,8 @@ impl CPU {
     }
 
     // little endian stuff??
-    fn read_u16(&mut self, pos: u16) -> u16 {
+
+    fn read_u16(&mut self, pos: u16) -> u16 { 
         let lo = self.read(pos) as u16;
         let hi = self.read(pos + 1) as u16;
         (hi << 8) | (lo as u16)
@@ -194,8 +195,10 @@ impl CPU {
                 0xB9 => {self.lda(&AddressingMode::Absolute_Y); self.pc += 1;}
                 0xA1 => self.lda(&AddressingMode::Indirect_X),
                 0xB1 => self.lda(&AddressingMode::Indirect_Y), 
-                // unimplemented addressing
+                
+                // tax
                 0xAA => self.tax(),
+                // inx
                 0xe8 => self.inx(),
                 _ => todo!()
             }

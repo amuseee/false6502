@@ -1,8 +1,8 @@
 pub mod cpu;
+#[cfg(test)]
+mod tests;
 
 fn main() {
     println!("da 6502");
 }
 
-#[cfg(test)]
-mod tests;
