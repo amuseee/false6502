@@ -34,7 +34,6 @@ pub enum AddressingMode {
 }
 
 impl CPU {
-
     pub fn new() -> Self {
         CPU {
             ra: 0,
@@ -45,17 +44,12 @@ impl CPU {
             memory: [0; 0xFFFF]
         }
     }
-
     fn get_op_addr(&mut self, mode: &AddressingMode) -> u16 {
-
         match mode {
             // taken from https://bugzmanov.github.io/nes_ebook/chapter_3_2.html - will re-implement
             AddressingMode::Immediate => self.pc,
- 
             AddressingMode::ZeroPage  => self.read(self.pc) as u16,
-           
             AddressingMode::Absolute => self.read_u16(self.pc),
-         
             AddressingMode::ZeroPage_X => {
                 let pos = self.read(self.pc);
                 let addr = pos.wrapping_add(self.rx) as u16;
@@ -66,7 +60,6 @@ impl CPU {
                 let addr = pos.wrapping_add(self.ry) as u16;
                 addr
             }
- 
             AddressingMode::Absolute_X => {
                 let base = self.read_u16(self.pc);
                 let addr = base.wrapping_add(self.rx as u16);
@@ -77,7 +70,6 @@ impl CPU {
                 let addr = base.wrapping_add(self.ry as u16);
                 addr
             }
- 
             AddressingMode::Indirect_X => {
                 let base = self.read(self.pc);
  
@@ -95,7 +87,6 @@ impl CPU {
                 let deref = deref_base.wrapping_add(self.ry as u16);
                 deref
             }
-          
             AddressingMode::NoneAddressing => {
                 panic!("mode {:?} is not supported", mode);
             }
@@ -150,7 +141,6 @@ impl CPU {
         } else {
             self.status &= 0b1111_1101;
         }
-
         // sets/unsets negative flag
         if result & 0b1000_0000 == 1 {
             self.status |= 0b1000_0000;
@@ -162,7 +152,6 @@ impl CPU {
     fn lda(&mut self, mode: &AddressingMode) {
         let addr = self.get_op_addr(mode);
         let value = self.read(addr);
-        
         self.ra = value;
         self.update_flags(self.ra);
         self.pc += 1;
@@ -182,7 +171,6 @@ impl CPU {
         loop {
             let opcode = self.read(self.pc);
             self.pc += 1;
-
             match opcode {
                 // break
                 0x00 => return,
